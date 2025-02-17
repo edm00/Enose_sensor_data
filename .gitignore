@@ -1,2 +1,5 @@
 /.idea
 /env
+/node_modules
+/data_analysis/.idea
+/data_analysis/models/myvenv
