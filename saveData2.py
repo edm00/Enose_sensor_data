@@ -4,7 +4,7 @@ import time
 from datetime import datetime
 
 ser = serial.Serial('COM7', 9600)  # Adjust to your port and baud rate
-context = {'Sample': 'hair_oil_amla', 'Iteration': 4, 'ver': 'B'}
+context = {'Sample': 'Elaichi', 'Iteration': 5, 'ver': 'C'}
 readings = 1
 num_of_sensors = 8
 temp_n_humidity = 2
