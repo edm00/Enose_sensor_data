@@ -4,12 +4,12 @@ import time
 from datetime import datetime
 
 ser = serial.Serial('COM8', 9600)  # Adjust to your port and baud rate
-context = {'Sample': 'hair_oil_amla', 'Iteration':3, 'ver': 'C'}
+context = {'Sample': 'mustard_oil', 'Iteration':2, 'ver': 'A'}
 readings = 1
 num_of_sensors = 8  # Number of sensors
 temp_n_humidity = 0
 
-with open(f'./MEMS_Data_P6.0/{context["Sample"]}-{context["Iteration"]}{context["ver"]}.csv', 'x', newline='') as csvfile:
+with open(f'./MEMS_DATA_P6.0_A/{context["Sample"]}-{context["Iteration"]}{context["ver"]}.csv', 'x', newline='') as csvfile:
     fieldnames = ['Time', 'sensor1', 'sensor2', 'sensor3', 'sensor4', 'sensor5',
                   'sensor6', 'sensor7', 'sensor8', 'humidity', 'temperature']
     writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
