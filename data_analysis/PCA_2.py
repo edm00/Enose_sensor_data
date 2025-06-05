@@ -8,11 +8,6 @@ def perform_pca(file_paths, columns_to_remove=None, n_components=2):
     """
     Function to perform PCA on different data samples and visualize the result.
 
-    Parameters:
-    - file_paths (dict): A dictionary where keys are the labels (e.g. 'Air', 'Oil', 'Aloevera')
-                          and values are the file paths to the datasets.
-    - columns_to_remove (list): A list of columns to remove from the data before performing PCA.
-    - n_components (int): The number of principal components to keep.
     """
     # Try reading the data files and handle missing files gracefully
     try:

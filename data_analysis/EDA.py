@@ -12,10 +12,6 @@ def train_and_save_model(alcohol_url, air_url, model_filename):
     """
     Trains a model to classify alcohol and air data and saves it.
 
-    Args:
-      alcohol_url: URL to the alcohol dataset on Google Drive.
-      air_url: URL to the air dataset on Google Drive.
-      model_filename: Path to save the trained model on Google Drive.
     """
 
     def read_drive_file(url):
