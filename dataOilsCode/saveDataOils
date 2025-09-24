@@ -1,0 +1,156 @@
+import serial
+import csv
+import time
+from datetime import datetime
+
+ser = serial.Serial('COM8', 9600)
+context = {'Sample': 'Mustard_oil', 'Iteration':2, 'ver': 'B'}
+readings = 1
+num_of_sensors = 8  # Number of sensors
+temp_n_humidity = 0
+
+with open(f'./MEMS_DATA_P6.0_B/{context["Sample"]}-{context["Iteration"]}{context["ver"]}.csv', 'x', newline='') as csvfile:
+    fieldnames = ['Time', 'sensor1', 'sensor2', 'sensor3', 'sensor4', 'sensor5',
+                  'sensor6', 'sensor7', 'sensor8', 'humidity', 'temperature']
+    writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+    writer.writeheader()
+
+
+    delay = True
+    i = 10
+    while True:
+        try:
+            if delay:
+                time.sleep(2)  # Wait for sensors to stabilize
+                delay = False
+
+            line = ser.readline().decode('utf-8').rstrip()
+            data = line.split(',')  # Expecting 10 values (8 sensors + humidity + temp)
+            dt = datetime.now()
+            timestamp = dt.timestamp()
+            # print(len(data))
+            if len(data) == 1:
+                print(line)
+
+            if len(data) == num_of_sensors + temp_n_humidity:  # Ensure complete data
+                if i % 5 == 0:
+                    print(data)  # Print every 5th line for debugging
+                i += 1
+
+
+                writer.writerow({
+                    'Time': int(timestamp),
+                    'sensor1': data[0],
+                    'sensor2': data[1],
+                    'sensor3': data[2],
+                    'sensor4': data[3],
+                    'sensor5': data[4],
+                    'sensor6': data[5],
+                    'sensor7': data[6],
+                    'sensor8': data[7],
+                    # 'humidity': data[8],
+                    # 'temperature': data[9]
+                })
+
+                # terminate the program after N readings
+            # print(len(data) == 1 ,data[0])
+            # N = data[0].split(" ")[1]
+            # print("N = ",N)
+            N = readings - 1
+            if len(data) == 1 and  data[0] == f'Finished {N}':
+                    print("Terminating...")
+                    break
+        except KeyboardInterrupt:
+            print("Terminating...")
+            break
+        except (ValueError, IndexError) as e:
+            print(f"Error processing line: {line} - {e}")
+            continue
+
+ser.close()
+
+###############
+import serial
+import csv
+import time
+import os
+from datetime import datetime
+
+# Configuration
+ser = serial.Serial('COM8', 9600)  # Change to your actual COM port
+readings = 50  # Number of readings per sample
+num_of_sensors = 8
+temp_n_humidity = 0  # Set to 2 if including humidity/temp
+output_dir = './OIL_DATA'  # Output directory
+
+# Define base oils and their adulterants
+oil_types = ['Mustard', 'Sunflower', 'Palm', 'Groundnut']
+adulterants = {
+    'Mustard': 'Palm',
+    'Mustard': 'Canola oil',
+    'Palm': 'Mustard',
+    'Groundnut': 'Sunflower'
+}
+
+# Define adulteration levels (0% to 100%)
+adulteration_levels = [i for i in range(0, 110, 10)]  # 0% to 100% in 10% steps
+
+# Ensure output directory exists
+os.makedirs(output_dir, exist_ok=True)
+
+# Start data collection
+for base_oil in oil_types:
+    adulterant = adulterants[base_oil]
+
+    for adulterant_pct in adulteration_levels:
+        base_oil_pct = 100 - adulterant_pct
+
+        filename = f'{base_oil}_with_{adulterant}_{base_oil_pct}-{adulterant_pct}.csv'
+        filepath = os.path.join(output_dir, filename)
+
+        print(f"\n>>> Starting sample: {filename} <<<")
+
+        with open(filepath, 'w', newline='') as csvfile:
+            fieldnames = ['Time'] + [f'sensor{i+1}' for i in range(num_of_sensors)]
+            writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+            writer.writeheader()
+
+            delay = True
+            i = 0
+            while i < readings:
+                try:
+                    if delay:
+                        print("Waiting for sensors to stabilize...")
+                        time.sleep(2)
+                        delay = False
+
+                    line = ser.readline().decode('utf-8').rstrip()
+                    data = line.split(',')
+                    dt = datetime.now()
+                    timestamp = dt.timestamp()
+
+                    # Skip lines that don't contain the expected number of values
+                    if len(data) == 1:
+                        print("Message:", line)
+                        continue
+
+                    if len(data) == num_of_sensors + temp_n_humidity:
+                        writer.writerow({
+                            'Time': int(timestamp),
+                            **{f'sensor{j+1}': data[j] for j in range(num_of_sensors)}
+                        })
+
+                        if i % 5 == 0:
+                            print(f"Reading {i+1}/{readings}: {data}")
+                        i += 1
+
+                except KeyboardInterrupt:
+                    print("Manual interruption. Exiting...")
+                    ser.close()
+                    exit()
+                except (ValueError, IndexError) as e:
+                    print(f"Error processing line: {line} - {e}")
+                    continue
+
+print("\n>>> Data collection completed for all oil-adulterant combinations. <<<")
+ser.close()
